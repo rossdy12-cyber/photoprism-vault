@@ -1,0 +1,55 @@
+name: Build unsigned IPA
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Install XcodeGen
+        run: |
+          brew update
+          brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Build unsigned archive
+        run: |
+          xcodebuild \
+            -project PhotoVault.xcodeproj \
+            -scheme PhotoVault \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/PhotoVault.xcarchive \
+            archive \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY=""
+
+      - name: Create unsigned IPA
+        run: |
+          mkdir -p build/Payload
+          cp -R "build/PhotoVault.xcarchive/Products/Applications/PhotoVault.app" build/Payload/
+          cd build
+          zip -qry PhotoVault-unsigned.ipa Payload
+          mv PhotoVault-unsigned.ipa ../PhotoVault-unsigned.ipa
+
+      - name: Upload unsigned IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: PhotoVault-unsigned-ipa
+          path: PhotoVault-unsigned.ipa
+          if-no-files-found: error
