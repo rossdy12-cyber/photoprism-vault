@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct LibraryView: View {
+    @EnvironmentObject private var auth: AuthViewModel
     let client: PhotoPrismClient
 
     @State private var photos: [Photo] = []

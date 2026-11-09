@@ -87,7 +87,7 @@ actor PhotoPrismClient {
         return (result, previewToken)
     }
 
-    func thumbnailURL(for photo: Photo, previewToken: String?, size: Int = 480) -> URL? {
+    nonisolated func thumbnailURL(for photo: Photo, previewToken: String?, size: Int = 480) -> URL? {
         guard let previewToken, !previewToken.isEmpty else { return nil }
 
         var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: false)!
